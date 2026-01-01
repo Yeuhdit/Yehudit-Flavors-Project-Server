@@ -4,7 +4,7 @@ import {
     getAllRecipes,
     getRecipeByCode,
     getRecipesByPreparationTime,
-    getRecipesByUser,
+    getRecipesByUser, 
     addRecipe,
     updateRecipes,
     deleteRecipe
