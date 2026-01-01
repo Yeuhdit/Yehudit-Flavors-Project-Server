@@ -1,50 +1,44 @@
 // node-server/middlewares/userAuth.js
 import jwt from 'jsonwebtoken';
 
-// Middleware לאימות משתמש רגיל
+// אימות חובה – משתמש מחובר
 export const userAuth = (req, res, next) => {
-    try {
-        // חילוץ הטוקן מה-Headers
-        const { authorization } = req.headers;
-        const [, token] = authorization.split(' ');
-        
-        // מפתח סודי ל-JWT
-        const privateKey = process.env.JWT_SECRET || 'JWT_SECRET';
-        
-        // אימות הטוקן וקבלת הנתונים שבו
-        const data = jwt.verify(token, privateKey);
-        req.user = data;
+  try {
+    const { authorization } = req.headers;
+    if (!authorization) return next({ message: 'Authorization header missing', status: 401 });
 
-        // בדיקה של תפקיד המשתמש
-        if (req.user.role !== 'user' && req.user.role !== 'registered user') {
-            return next({ message: 'no permission to invoke this function', status: 403 });
-        }
+    const [, token] = authorization.split(' ');
+    const privateKey = process.env.JWT_SECRET || 'JWT_SECRET';
+    const data = jwt.verify(token, privateKey);
+    req.user = data;
 
-        // ממשיך ל-Middleware הבא או לרוטר
-        next();
-    } catch (error) {
-        console.log('error', error);
-        next({ message: error.message || error, status: 401 });
+    if (!['user', 'registered user'].includes(req.user.role)) {
+      return next({ message: 'no permission to invoke this function', status: 403 });
     }
+
+    next();
+  } catch (error) {
+    next({ message: error.message || 'Unauthorized', status: 401 });
+  }
 };
 
-// Middleware לאימות גישה אך לא מחייבת
+// אימות אופציונלי – ממשיך גם בלי טוקן
 export const getAuth = (req, res, next) => {
-    try {
-        const { authorization } = req.headers;
-        const [, token] = authorization.split(' ');
-        const privateKey = process.env.JWT_SECRET || 'JWT_SECRET';
-        const data = jwt.verify(token, privateKey);
-        req.user = data;
+  try {
+    const { authorization } = req.headers;
+    if (!authorization) return next();
 
-        if (req.user.role !== 'user' && req.user.role !== 'registered user') {
-            return next({ message: 'no permission to invoke this function', status: 403 });
-        }
+    const [, token] = authorization.split(' ');
+    const privateKey = process.env.JWT_SECRET || 'JWT_SECRET';
+    const data = jwt.verify(token, privateKey);
+    req.user = data;
 
-        next();
-    } catch (error) {
-        console.log('error', error);
-        // במקרה הזה ממשיכים גם אם אין טוקן תקין
-        next();
+    if (!['user', 'registered user'].includes(req.user.role)) {
+      return next({ message: 'no permission to invoke this function', status: 403 });
     }
+
+    next();
+  } catch (error) {
+    next(); // ממשיך גם אם הטוקן לא תקין
+  }
 };

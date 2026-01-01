@@ -32,6 +32,7 @@ export const signUp = async (req, res, next) => {
     if (existUser) return next({ message: 'User already exists', status: 409 });
 
     // 3. Check if password already used
+    
     const allUsers = await User.find();
     for (const u of allUsers) {
       const samePassword = await bcrypt.compare(password, u.password);

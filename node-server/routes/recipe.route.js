@@ -9,7 +9,7 @@ import {
     updateRecipes,
     deleteRecipe
 } from '../controllers/recipe.controller.js';
-import { userAuth, getAuth } from '../middlewares/userAuth.js';
+import { userAuth, getAuth } from '../middlewares/userAuth.js'; // ← תקין
 import { adminAuth } from '../middlewares/adminAuth.js';
 
 const router = express.Router();

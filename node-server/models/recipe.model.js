@@ -1,33 +1,21 @@
 // node-server/middlewares/userAuth.js
-//בודקה טוקנים 
-import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 
-// Middleware לאימות משתמש רגיל
-export const userAuth = (req, res, next) => {
-    try {
-        // חילוץ הטוקן מה-Headers
-        const { authorization } = req.headers;
-        const [, token] = authorization.split(' ');
-        
-        // מפתח סודי ל-JWT
-        const privateKey = process.env.JWT_SECRET || 'JWT_SECRET';
-        
-        // אימות הטוקן וקבלת הנתונים שבו
-        const data = jwt.verify(token, privateKey);
-        req.user = data;
+const recipeSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  preparationTime: { type: Number, required: true },
+  difficulty: { type: String, enum: ['easy', 'medium', 'hard'], required: true },
+  categories: [{ type: String }],
+  isPrivate: { type: Boolean, default: false },
+  imagUrl: { type: String },
+  user: {
+    name: { type: String },
+    _id: { type: mongoose.Schema.Types.ObjectId }
+  }
+});
 
-        // בדיקה של תפקיד המשתמש
-        if (req.user.role !== 'user' && req.user.role !== 'registered user') {
-            return next({ message: 'no permission to invoke this function', status: 403 });
-        }
-
-        // ממשיך ל-Middleware הבא או לרוטר
-        next();
-    } catch (error) {
-        console.log('error', error);
-        next({ message: error.message || error, status: 401 });
-    }
-};
+// ← רק כאן מגדירים את Recipes!
+export const Recipes = mongoose.model('Recipes', recipeSchema);
 
 // Middleware לאימות גישה אך לא מחייבת
 export const getAuth = (req, res, next) => {

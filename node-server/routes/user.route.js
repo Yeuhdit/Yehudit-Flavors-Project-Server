@@ -1,7 +1,6 @@
 // node-server/routes/user.route.js
 import express from 'express';
 import { signIn, signUp, getAllUsers } from '../controllers/user.controller.js';
-import { auth } from '../middlewares/userAuth.js';
 import { adminAuth } from '../middlewares/adminAuth.js';
 
 const router = express.Router();
