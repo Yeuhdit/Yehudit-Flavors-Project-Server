@@ -31,7 +31,9 @@ connectDB();
 app.use("/api/users", userRoutes);
 app.use("/api/recipes", recipeRoutes);
 app.use("/api/categories", categoriesRoutes);
-
+app.use('/api/recipes', recipeRoutes);
+app.use('/api/categories', categoryRouter);
+app.use('/images', express.static('images'));
 // --- Route בדיקה ---
 app.get("/", (req, res) => {
   res.send("✅ Server is running!!!!!");
