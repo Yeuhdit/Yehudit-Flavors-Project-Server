@@ -1,5 +1,6 @@
 import { Recipes } from "../models/recipe.model.js";
 import { Categories } from "../models/categories.model.js";
+import { Level } from "../models/level.model.js";
 import { User } from "../models/user.model.js";
 import mongoose from "mongoose";
 import multer from "multer";
@@ -29,6 +30,7 @@ const recipeSchema = Joi.object({
   preparationTime: Joi.number().required(),
   difficulty: Joi.string().valid('easy', 'medium', 'hard').required(),
   categories: Joi.array().items(Joi.string()).optional(),
+  levels: Joi.array().items(Joi.string()).optional(),
   isPrivate: Joi.boolean().optional()
 });
 
@@ -45,6 +47,7 @@ export const getAllRecipes = async (req, res, next) => {
 
     const recipes = await Recipes.find({ $or: query })
       .populate('categories')
+      .populate('levels')
       .select('-__v')
       .skip((page - 1) * perPage)
       .limit(Number(perPage));
@@ -61,7 +64,7 @@ export const getRecipeByCode = async (req, res, next) => {
     return res.status(400).json({ message: 'Invalid ID' });
   }
   try {
-    const recipe = await Recipes.findById(id).populate('categories').select('-__v');
+    const recipe = await Recipes.findById(id).populate('categories').populate('levels').select('-__v');
     if (!recipe) return res.status(404).json({ message: 'Recipe not found' });
     res.json(recipe);
   } catch (err) {
@@ -74,6 +77,7 @@ export const getRecipesByUser = async (req, res, next) => {
   try {
     const recipes = await Recipes.find({ 'user._id': id })
       .populate('categories')
+      .populate('levels')
       .select('-__v');
     res.json(recipes);
   } catch (err) {
@@ -100,38 +104,21 @@ export const addRecipe = async (req, res, next) => {
       const recipe = new Recipes({
         ...value,
         user: { name: user.username, _id: user._id },
-        imagUrl: req.file ? req.file.filename : undefined
+        imagUrl: req.file ? `/images/${req.file.filename}` : undefined
       });
 
       await recipe.save();
 
-      // עדכון קטגוריות
+      // עדכון קטגוריות ורמות
       if (value.categories && value.categories.length > 0) {
-        const categoryNames = value.categories;
-
-        // מוסיף את המתכון לקטגוריות קיימות
-        await Categories.updateMany(
-          { description: { $in: categoryNames } },
-          { $addToSet: { recipes: recipe._id } }
-        );
-
-        // יוצר קטגוריות חדשות אם אין
-        const existing = await Categories.find({ description: { $in: categoryNames } }).select('description');
-        const existingNames = existing.map(c => c.description);
-        const newNames = categoryNames.filter(name => !existingNames.includes(name));
-
-        if (newNames.length > 0) {
-          const newDocs = newNames.map(name => ({
-            description: name,
-            recipes: [recipe._id]
-          }));
-          await Categories.insertMany(newDocs);
-        }
-
-        // מעדכן את השדה categories במתכון
-        recipe.categories = await Categories.find({ description: { $in: categoryNames } }).select('_id');
-        await recipe.save();
+        recipe.categories = value.categories;
       }
+
+      if (value.levels && value.levels.length > 0) {
+        recipe.levels = value.levels;
+      }
+
+      await recipe.save();
 
       res.status(201).json(recipe);
     } catch (err) {
@@ -162,29 +149,10 @@ export const updateRecipes = async (req, res, next) => {
       // עדכון השדות
       const updateData = { ...value };
       if (req.file) updateData.imagUrl = req.file.filename;
+      if (value.categories) updateData.categories = value.categories;
+      if (value.levels) updateData.levels = value.levels;
 
-      const updatedRecipe = await Recipes.findByIdAndUpdate(id, updateData, { new: true });
-
-      // עדכון קטגוריות
-      const oldCategories = prevRecipe.categories || [];
-      const newCategories = value.categories || [];
-
-      // הסרת המתכון מקטגוריות ישנות שלא קיימות עוד
-      const toRemove = oldCategories.filter(catId => !newCategories.some(newCat => newCat.equals(catId)));
-      if (toRemove.length > 0) {
-        await Categories.updateMany(
-          { _id: { $in: toRemove } },
-          { $pull: { recipes: id } }
-        );
-      }
-
-      // הוספת לקטגוריות חדשות
-      if (newCategories.length > 0) {
-        await Categories.updateMany(
-          { _id: { $in: newCategories } },
-          { $addToSet: { recipes: id } }
-        );
-      }
+      const updatedRecipe = await Recipes.findByIdAndUpdate(id, updateData, { new: true }).populate('categories').populate('levels');
 
       res.json(updatedRecipe);
     } catch (err) {

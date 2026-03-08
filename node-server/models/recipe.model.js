@@ -1,3 +1,4 @@
+// src/models/recipe.model.js
 import mongoose from 'mongoose';
 
 const recipeSchema = new mongoose.Schema({
@@ -13,6 +14,10 @@ const recipeSchema = new mongoose.Schema({
   categories: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Categories'
+  }],
+  levels: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Level'
   }]
 }, { timestamps: true });
 
