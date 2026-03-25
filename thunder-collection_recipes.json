@@ -1,0 +1,53 @@
+// node-server/thunder-collection_recipes.json
+{
+    "client": "Thunder Client",
+    "collectionName": "Recipe Project API - Full Test Suite",
+    "dateExported": "2024-05-20T12:00:00.000Z",
+    "version": "1.1",
+    "folders": [
+        { "name": "Users", "containerId": "" },
+        { "name": "Recipes", "containerId": "" },
+        { "name": "Categories", "containerId": "" },
+        { "name": "Levels", "containerId": "" }
+    ],
+    "requests": [
+        {
+            "name": "Register User",
+            "url": "http://localhost:5005/api/users/signup",
+            "method": "POST",
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@test.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "folderId": "Users"
+        },
+        {
+            "name": "Login User",
+            "url": "http://localhost:5005/api/users/signin",
+            "method": "POST",
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"email\": \"test@test.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "folderId": "Users"
+        },
+        {
+            "name": "Get All Recipes",
+            "url": "http://localhost:5005/api/recipes/getallrecipes",
+            "method": "GET",
+            "folderId": "Recipes"
+        },
+        {
+            "name": "Get All Categories",
+            "url": "http://localhost:5005/api/categories/getallcategories",
+            "method": "GET",
+            "folderId": "Categories"
+        },
+        {
+            "name": "Get All Levels",
+            "url": "http://localhost:5005/api/levels",
+            "method": "GET",
+            "folderId": "Levels"
+        }
+    ]
+}

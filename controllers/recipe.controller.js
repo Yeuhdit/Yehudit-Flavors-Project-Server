@@ -47,7 +47,8 @@ const recipeSchema = Joi.object({
   ingredients: Joi.array().items(Joi.string()).min(1).required(),
   instructions: Joi.array().items(Joi.string()).min(1).required(),
   isPrivate: Joi.boolean().optional(),
-  image: Joi.any().optional()
+  image: Joi.any().optional(),
+  youtubeUrl: Joi.string().allow('', null).optional() // 🔥 Joi מאשר את היוטיוב
 }).unknown(true);
 
 export const getAllRecipes = async (req, res, next) => {
@@ -103,7 +104,6 @@ export const addRecipe = async (req, res, next) => {
       const user = await User.findById(req.user.user_id);
       if (!user) return res.status(404).json({ message: 'User not found' });
 
-      // התיקון: שומרים את התמונה בשני השמות כדי להבטיח שהמונגו קולט את זה!
       const imgPath = req.file ? `/images/${req.file.filename}` : undefined;
       
       const recipeData = {
@@ -159,7 +159,7 @@ export const updateRecipes = async (req, res, next) => {
       const updateData = { ...value };
       if (req.file) {
         updateData.imageUrl = `/images/${req.file.filename}`;
-        updateData.image = `/images/${req.file.filename}`; // שומרים גם פה כפול ליתר ביטחון
+        updateData.image = `/images/${req.file.filename}`; 
       }
 
       const updatedRecipe = await Recipes.findByIdAndUpdate(id, updateData, { new: true })

@@ -1,11 +1,12 @@
-//node-server/models/recipe.model.js
+// node-server/models/recipe.model.js
 import mongoose from 'mongoose';
 
 const recipeSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   preparationTime: { type: Number, required: true },
   difficulty: { type: String, enum: ['easy', 'medium', 'hard'], required: true },
-  imageUrl: { type: String }, // 🔥 תוקן ל-imageUrl בצורה תקנית
+  imageUrl: { type: String },
+  youtubeUrl: { type: String }, // 🔥 הוספנו את קישור היוטיוב
   isPrivate: { type: Boolean, default: false },
   ingredients: [{ type: String }],
   instructions: [{ type: String }],

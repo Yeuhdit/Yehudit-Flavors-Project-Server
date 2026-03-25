@@ -1,32 +1,54 @@
-# server 2025
+# ⚙️ יהודית בטעמים - Backend Server (Node.js & Express)
+
+זהו צד השרת של פרויקט "יהודית בטעמים". השרת מנהל את כל הלוגיקה העסקית, החיבור למסד הנתונים, ההרשאות וניהול הקבצים של האפליקציה.
 
 > [!NOTE]
-> change **<http://localhost:5000/>** to your **process.env.PORT**
+> יש להגדיר קובץ `.env` עם המשתנים הבאים:
+> `PORT=5005` (או כל פורט אחר)
+> `DB_URL=mongodb://localhost:27017/recipesDB`
+> `JWT_SECRET=your_secret_key`
 
-## users resource
+## 👥 Users API
 
-| url | method | description | permissions | parameters | optional parameters | body | headers | returns | status codes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [http://localhost:5000/users/signup](http://localhost:5000/users/signup)| POST | user sign up | - |-|-|{username,email,password,addres}|-|user+token|204|
-| [http://localhost:5000/users/signin](http://localhost:5000/users/signin) | POST | user sign in | - |-|-|{email,password}|-|user+token|204|
-| [http://localhost:5000/users/getAllUser](http://localhost:5000/getAllUser)| GET | get all user  | current user |-|-||-|all usesr|200|
+| Method | URL | Description | Permissions | Returns | Status |
+| --- | --- | --- | --- | --- | --- |
+| **POST** | `/api/users/signup` | יצירת חשבון משתמש חדש | All | User object + Token | 201 |
+| **POST** | `/api/users/signin` | התחברות למערכת | All | User object + Token | 200 |
+| **GET** | `/api/users/getAllUser` | קבלת רשימת כל המשתמשים | Logged in user | Array of users | 200 |
 
-## recipes resource
+## 🍝 Recipes API
 
-| url | method | description | permissions | parameters | optional parameters | body | headers | returns | status codes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [http://localhost:5000/recipes/getallrecipes](http://localhost:5000/recipes/getallrecipes) | GET | get all recipes | - |-|seach value ,start page ,num of page|-|-|all recipes|200|
-| [http://localhost:5000/recipes/getRecipeByCode/:id](http://localhost:5000/recipes/getRecipeByCode/:id) | GET |  get recipe by id  | - |*id*|-|-|-|recipe by *id*|200|
-| [http://localhost:5000/recipes/getRecipesByPreparationTime/:pt](http://localhost:5000/recipes/getRecipesByPreparationTime:/pt) | GET | get recipes by *preaperation time* | - |*preapertain time*|-|-|-|recipe by preapertain time|200|
-| [http://localhost:5000/recipes/getRecipesByUser/:id](http://localhost:5000/recipes/getRecipesByUser/:id) | GET |  return recipe by *user  id* | curren user | user id|-|-|token|recipe by *use id*|200|
-| [http://localhost:5000/recipes/addRecipe](http://localhost:5000/recipes/addRecipe) | POST | add recipe  |curren user|-|-|{recipe}|token|new recipe added|204|
-| [http://localhost:5000/updateRecipes/:id](http://localhost:5000/updateRecipes/:id) | UPDATE |   update existing reipe  (by *recipe id*) | curren user |*recipe id*|-|{new recipe}|token|return  updated recipe|204|
- [http://localhost:5000/deleteRecipe/:id](http://localhost:5000/deleteRecipe/:id) | DELETE |   deleting existing reipe  (by *recipe id*) | curren user |*recipe id*|-|-|token|-|204|
+| Method | URL | Description | Permissions | Parameters | Returns | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| **GET** | `/api/recipes/getallrecipes` | קבלת כל המתכונים | All | - | Array of recipes | 200 |
+| **GET** | `/api/recipes/getRecipeByCode/:id` | קבלת מתכון ספציפי לפי מזהה | All | `id` (params) | Recipe object | 200 |
+| **GET** | `/api/recipes/getRecipesByUser/:userId` | קבלת מתכונים של משתמש | Logged in user | `userId` (params) | Array of recipes | 200 |
+| **POST** | `/api/recipes/` | הוספת מתכון חדש | Logged in user | Form-Data (includes image) | New recipe | 201 |
+| **PUT** | `/api/recipes/:id` | עדכון מתכון קיים | Owner / Admin | `id` (params), Form-Data | Updated recipe | 200 |
+| **DELETE** | `/api/recipes/:id` | מחיקת מתכון קיים | Owner / Admin | `id` (params) | - | 204 |
 
+## 🏷️ Categories API
 
-## category resource
-| url | method | description | permissions | parameters | optional parameters | body | headers | returns | status codes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [http://localhost:5000/categories/getallcategories](http://localhost:5000/categories/getallcategories) | GET | get all category | - |-|-|-|-|all category|200|
-| [http://localhost:5000/categories/getAllCategoriesAndRecipe](http://localhost:5000/categories/getAllCategoriesAndRecipe) | GET | get all category with recipe| - |-|-|-|-|all category with recipe |200|
-| [http://localhost:5000/categories/getCategoryByIdWithRec/:id](http://localhost:5000/categories/getCategoryByIdWithRec/:id) | GET | get category by id with recipe| - |*id*|-|-|-|category by id with recipes |200|
+| Method | URL | Description | Permissions | Parameters | Returns | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| **GET** | `/api/categories/getallcategories` | קבלת כל הקטגוריות | All | - | Array of categories | 200 |
+| **GET** | `/api/categories/getAllCategoriesAndRecipe`| קבלת קטגוריות כולל המתכונים | All | - | Array with populated recipes | 200 |
+| **GET** | `/api/categories/getCategoryByIdWithRec/:id`| קבלת קטגוריה ספציפית עם מתכונים| All | `id` (params) | Category object | 200 |
+| **POST** | `/api/categories/` | יצירת קטגוריה חדשה | Admin | Body: `{description}` | New category | 201 |
+| **PUT** | `/api/categories/:id` | עדכון שם הקטגוריה | Admin | `id` (params), Body | Updated category | 200 |
+| **DELETE** | `/api/categories/:id` | מחיקת קטגוריה מהמערכת | Admin | `id` (params) | Success message | 200 |
+
+## 📊 Levels API
+
+| Method | URL | Description | Permissions | Parameters | Returns | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| **GET** | `/api/levels/` | קבלת כל רמות הקושי | All | - | Array of levels | 200 |
+| **GET** | `/api/levels/:id` | קבלת רמה ספציפית | All | `id` (params) | Level object | 200 |
+| **POST** | `/api/levels/` | יצירת רמה חדשה | Admin | Body: `{description}` | New level | 201 |
+| **PUT** | `/api/levels/:id` | עדכון שם הרמה | Admin | `id` (params), Body | Updated level | 200 |
+| **DELETE** | `/api/levels/:id` | מחיקת רמת קושי | Admin | `id` (params) | Success message | 200 |
+
+## 🛡️ אבטחה (Middlewares)
+* **`userAuth`**: מוודא שהמשתמש מחובר ושולח טוקן תקין (נדרש להוספת מתכון).
+* **`adminAuth`**: מוודא שהמשתמש מחובר ושהוא בעל הרשאת מנהל (נדרש לפעולות בקטגוריות ורמות).
+* **`loggerCreator`**: מתעד (log) כל בקשה לשרת, מסייע למעקב אחרי תעבורת הנתונים.

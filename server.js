@@ -1,4 +1,68 @@
-// קובץ: node-server/server.js
+// // node-server/server.js
+// import 'dotenv/config';
+// import express from 'express';
+// import connectDB from './config/db.js';
+// import cors from 'cors';
+// import path from 'path'; 
+// import { fileURLToPath } from 'url'; 
+// import { pageNotFound, serverErrors } from './middlewares/handleErrors.js';
+// import { loggerCreator } from './middlewares/logger.js'; // 🔥 ייבוא ה-Middleware Creator
+// import fs from 'fs'; 
+
+// // יבוא נתיבים
+// import userRoutes from './routes/user.route.js';
+// import recipeRoutes from './routes/recipe.route.js';
+// import categoriesRoutes from './routes/categories.route.js';
+// import levelRoutes from './routes/level.route.js';
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+
+// const app = express();
+
+// // הגדרות בסיסיות
+// app.use(cors());
+// app.use(express.json({ limit: '50mb' }));
+
+// // 🔥 הפעלת ה-Custom Middleware! הוא ידפיס לוג לכל בקשה שמגיעה.
+// app.use(loggerCreator('detailed')); 
+
+// // 🔥 התיקון הקריטי: מוודאים שתיקיית images קיימת, ואם לא - יוצרים אותה!
+// const imagesDir = path.join(process.cwd(), 'images'); 
+// if (!fs.existsSync(imagesDir)) {
+//     fs.mkdirSync(imagesDir);
+//     console.log('📁 Created "images" directory');
+// }
+
+// // הגדרת תיקיית תמונות כסטטית - עם נתיב אבסולוטי ובטוח
+// app.use('/images', express.static(imagesDir));
+
+// // נתיבי ה-API
+// app.use('/api/users', userRoutes);
+// app.use('/api/recipes', recipeRoutes);
+// app.use('/api/categories', categoriesRoutes);
+// app.use('/api/levels', levelRoutes); 
+
+// // בדיקת תקינות
+// app.get('/api/test', (req, res) => {
+//     res.send({ message: "Server is up and running! ✅" });
+// });
+
+// // טיפול בשגיאות
+// app.use(pageNotFound);
+// app.use(serverErrors);
+
+// // חיבור ל-DB והפעלת השרת
+// connectDB().then(() => {
+//     const PORT = process.env.PORT || 5000;
+//     app.listen(PORT, () => {
+//         console.log(`🚀 Server flying on http://localhost:${PORT}`);
+//         console.log(`📂 Serving images from: ${imagesDir}`); // 🔥 הדפסה שתעזור לנו לוודא
+//     });
+// }).catch(err => {
+//     console.error("❌ Failed to connect to MongoDB:", err);
+// });
+// node-server/server.js
 import 'dotenv/config';
 import express from 'express';
 import connectDB from './config/db.js';
@@ -6,7 +70,8 @@ import cors from 'cors';
 import path from 'path'; 
 import { fileURLToPath } from 'url'; 
 import { pageNotFound, serverErrors } from './middlewares/handleErrors.js';
-import fs from 'fs'; // 🔥 הוספנו כדי לוודא שתיקיית images קיימת
+import morgan from 'morgan'; // שימוש בספריה סטנדרטית ללוגים שקיימת ב-package.json שלך
+import fs from 'fs'; 
 
 // יבוא נתיבים
 import userRoutes from './routes/user.route.js';
@@ -22,15 +87,16 @@ const app = express();
 // הגדרות בסיסיות
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
+app.use(morgan('dev')); // מדפיס כל בקשת HTTP לטרמינל בצבעים (יפה ומקצועי)
 
-// 🔥 התיקון הקריטי: מוודאים שתיקיית images קיימת, ואם לא - יוצרים אותה!
+// וידוא קיום תיקיית תמונות
 const imagesDir = path.join(process.cwd(), 'images'); 
 if (!fs.existsSync(imagesDir)) {
     fs.mkdirSync(imagesDir);
     console.log('📁 Created "images" directory');
 }
 
-// הגדרת תיקיית תמונות כסטטית - עם נתיב אבסולוטי ובטוח
+// הגדרת תיקיית תמונות כסטטית
 app.use('/images', express.static(imagesDir));
 
 // נתיבי ה-API
@@ -50,12 +116,11 @@ app.use(serverErrors);
 
 // חיבור ל-DB והפעלת השרת
 connectDB().then(() => {
-    const PORT = process.env.PORT || 5000;
+    const PORT = process.env.PORT || 5005;
     app.listen(PORT, () => {
         console.log(`🚀 Server flying on http://localhost:${PORT}`);
-        console.log(`📂 Serving images from: ${imagesDir}`); // 🔥 הדפסה שתעזור לנו לוודא
+        console.log(`📂 Serving images from: ${imagesDir}`);
     });
 }).catch(err => {
     console.error("❌ Failed to connect to MongoDB:", err);
 });
-

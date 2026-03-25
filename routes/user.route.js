@@ -11,8 +11,7 @@ router.post('/signup', signUp);
 // התחברות
 router.post('/signin', signIn);
 
-// כל המשתמשים
-// router.get('/getAllUser', adminAuth, getAllUser);
-router.get('/getAllUser', getAllUsers);
+// כל המשתמשים - 🔥 התיקון בוצע: עכשיו הנתיב מוגן עם adminAuth!
+router.get('/getAllUser', adminAuth, getAllUsers);
 
 export default router;
