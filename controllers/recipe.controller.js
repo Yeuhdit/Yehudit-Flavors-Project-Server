@@ -48,7 +48,7 @@ const recipeSchema = Joi.object({
   instructions: Joi.array().items(Joi.string()).min(1).required(),
   isPrivate: Joi.boolean().optional(),
   image: Joi.any().optional(),
-  youtubeUrl: Joi.string().allow('', null).optional() // 🔥 Joi מאשר את היוטיוב
+  youtubeUrl: Joi.string().allow('', null).optional() 
 }).unknown(true);
 
 export const getAllRecipes = async (req, res, next) => {
@@ -195,4 +195,41 @@ export const deleteRecipe = async (req, res, next) => {
     await Recipes.findByIdAndDelete(id);
     res.status(204).send();
   } catch (err) { next(err); }
+};
+
+// 🔥 פונקציית הלייקים החדשה
+export const toggleLike = async (req, res, next) => {
+  try {
+    const recipeId = req.params.id;
+    const userId = req.user.user_id; // מזהה המשתמש מגיע מהטוקן של ההתחברות (userAuth)
+
+    if (!mongoose.Types.ObjectId.isValid(recipeId)) {
+      return res.status(400).json({ message: 'Invalid Recipe ID' });
+    }
+
+    const recipe = await Recipes.findById(recipeId);
+    if (!recipe) {
+      return res.status(404).json({ message: 'Recipe not found' });
+    }
+
+    // בודקים אם המשתמש כבר קיים במערך הלייקים (convert ObjectIds to strings for comparison)
+    const stringLikes = recipe.likes.map(id => id.toString());
+    const isLiked = stringLikes.includes(userId.toString());
+
+    if (isLiked) {
+      // מסירים
+      recipe.likes = recipe.likes.filter(id => id.toString() !== userId.toString());
+    } else {
+      // מוסיפים
+      recipe.likes.push(userId);
+    }
+
+    const updatedRecipe = await recipe.save();
+    
+    // אנו מחזירים את המתכון המעודכן כדי שהקליינט יוכל לעדכן את התצוגה המלאה (כולל Populate אם נרצה בעתיד)
+    // אבל מספיק להחזיר את מערך הלייקים החדש
+    res.json({ message: 'Like status toggled', likes: updatedRecipe.likes });
+  } catch (err) {
+    next(err);
+  }
 };

@@ -6,7 +6,7 @@ const recipeSchema = new mongoose.Schema({
   preparationTime: { type: Number, required: true },
   difficulty: { type: String, enum: ['easy', 'medium', 'hard'], required: true },
   imageUrl: { type: String },
-  youtubeUrl: { type: String }, // 🔥 הוספנו את קישור היוטיוב
+  youtubeUrl: { type: String }, 
   isPrivate: { type: Boolean, default: false },
   ingredients: [{ type: String }],
   instructions: [{ type: String }],
@@ -21,6 +21,11 @@ const recipeSchema = new mongoose.Schema({
   levels: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Level'
+  }],
+  // 🔥 שדה הלייקים החדש: שומר מערך של מזהי משתמשים (User IDs) שעשו לייק
+  likes: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User' 
   }]
 }, { timestamps: true });
 
