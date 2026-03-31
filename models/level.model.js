@@ -1,5 +1,4 @@
-
-//node-server/models/level.model.js
+// node-server/models/level.model.js
 import mongoose from 'mongoose';
 
 const levelSchema = new mongoose.Schema({
@@ -7,4 +6,3 @@ const levelSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 export const Level = mongoose.model('Level', levelSchema);
-
